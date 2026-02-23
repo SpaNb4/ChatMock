@@ -29,9 +29,17 @@ Set options in `.env` or pass environment variables:
 - `CHATGPT_LOCAL_CLIENT_ID`: OAuth client id override (rarely needed)
 - `CHATGPT_LOCAL_EXPOSE_REASONING_MODELS`: `true|false` to add reasoning model variants to `/v1/models`
 - `CHATGPT_LOCAL_ENABLE_WEB_SEARCH`: `true|false` to enable default web search tool
+- `CHATGPT_LOCAL_DISABLE_REPO_PROMPTS`: `true|false` to disable loading `prompt.md` / `prompt_gpt5_codex.md`
 
 ## Logs
 Set `VERBOSE=true` to include extra logging for debugging issues in upstream or chat app requests. Please include and use these logs when submitting bug reports.
+
+## Applying config changes
+After changing `.env` values, recreate the container so new environment variables are picked up:
+
+```
+docker compose up -d --build --force-recreate chatmock
+```
 
 ## Test
 

@@ -24,6 +24,10 @@ if [[ "$cmd" == "serve" ]]; then
     ARGS+=(--verbose-obfuscation)
   fi
 
+  if bool "${CHATGPT_LOCAL_DISABLE_REPO_PROMPTS:-}"; then
+    ARGS+=(--disable-repo-prompts)
+  fi
+
   if [[ "$#" -gt 0 ]]; then
     ARGS+=("$@")
   fi
