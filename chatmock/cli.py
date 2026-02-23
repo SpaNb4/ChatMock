@@ -270,6 +270,7 @@ def cmd_serve(
     debug_model: str | None,
     expose_reasoning_models: bool,
     default_web_search: bool,
+    disable_repo_prompts: bool,
 ) -> int:
     app = create_app(
         verbose=verbose,
@@ -280,6 +281,7 @@ def cmd_serve(
         debug_model=debug_model,
         expose_reasoning_models=expose_reasoning_models,
         default_web_search=default_web_search,
+        disable_repo_prompts=disable_repo_prompts,
     )
 
     app.run(host=host, debug=False, use_reloader=False, port=port, threaded=True)
@@ -348,6 +350,15 @@ def main() -> None:
             "Also configurable via CHATGPT_LOCAL_ENABLE_WEB_SEARCH."
         ),
     )
+    p_serve.add_argument(
+        "--disable-repo-prompts",
+        action=argparse.BooleanOptionalAction,
+        default=(os.getenv("CHATGPT_LOCAL_DISABLE_REPO_PROMPTS") or "").strip().lower() in ("1", "true", "yes", "on"),
+        help=(
+            "Disable loading prompt.md/prompt_gpt5_codex.md from this repo and send no instructions field upstream. "
+            "Useful when your client already injects its own instruction stack."
+        ),
+    )
 
     p_info = sub.add_parser("info", help="Print current stored tokens and derived account id")
     p_info.add_argument("--json", action="store_true", help="Output raw auth.json contents")
@@ -369,6 +380,7 @@ def main() -> None:
                 debug_model=args.debug_model,
                 expose_reasoning_models=args.expose_reasoning_models,
                 default_web_search=args.enable_web_search,
+                disable_repo_prompts=args.disable_repo_prompts,
             )
         )
     elif args.command == "info":

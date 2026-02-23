@@ -162,6 +162,13 @@ You can enable it by starting the server with this parameter, which will allow O
 - `--expose-reasoning-models`<br>
 If your preferred app doesn’t support selecting reasoning effort, or you just want a simpler approach, this parameter exposes each reasoning level as a separate, queryable model. Each reasoning level also appears individually under ⁠/v1/models, so model pickers in your favorite chat apps will list all reasoning options as distinct models you can switch between.
 
+### Disable repo prompts
+
+- `--disable-repo-prompts` / `--no-disable-repo-prompts`<br>
+Disables loading `prompt.md` and `prompt_gpt5_codex.md` from this repository and omits the `instructions` field in upstream responses requests. This is useful when your client (such as Roo) already injects its own instruction stack.
+
+Environment variable alternative: `CHATGPT_LOCAL_DISABLE_REPO_PROMPTS=true`
+
 ## Notes
 If you wish to have the fastest responses, I'd recommend setting `--reasoning-effort` to low, and `--reasoning-summary` to none. <br>
 All parameters and choices can be seen by sending `python chatmock.py serve --h`<br>

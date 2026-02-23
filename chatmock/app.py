@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from flask import Flask, jsonify
 
-from .config import BASE_INSTRUCTIONS, GPT5_CODEX_INSTRUCTIONS
+from .config import resolve_instruction_set
 from .http import build_cors_headers
 from .routes_openai import openai_bp
 from .routes_ollama import ollama_bp
@@ -17,8 +17,12 @@ def create_app(
     debug_model: str | None = None,
     expose_reasoning_models: bool = False,
     default_web_search: bool = False,
+    disable_repo_prompts: bool | None = None,
 ) -> Flask:
     app = Flask(__name__)
+
+    base_instructions, gpt5_codex_instructions = resolve_instruction_set(disable_repo_prompts)
+    prompts_disabled = base_instructions is None and gpt5_codex_instructions is None
 
     app.config.update(
         VERBOSE=bool(verbose),
@@ -27,10 +31,11 @@ def create_app(
         REASONING_SUMMARY=reasoning_summary,
         REASONING_COMPAT=reasoning_compat,
         DEBUG_MODEL=debug_model,
-        BASE_INSTRUCTIONS=BASE_INSTRUCTIONS,
-        GPT5_CODEX_INSTRUCTIONS=GPT5_CODEX_INSTRUCTIONS,
+        BASE_INSTRUCTIONS=base_instructions,
+        GPT5_CODEX_INSTRUCTIONS=gpt5_codex_instructions,
         EXPOSE_REASONING_MODELS=bool(expose_reasoning_models),
         DEFAULT_WEB_SEARCH=bool(default_web_search),
+        DISABLE_REPO_PROMPTS=prompts_disabled,
     )
 
     @app.get("/")

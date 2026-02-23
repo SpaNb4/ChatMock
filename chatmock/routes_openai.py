@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 
 from flask import Blueprint, Response, current_app, jsonify, make_response, request
 
-from .config import BASE_INSTRUCTIONS, GPT5_CODEX_INSTRUCTIONS
 from .limits import record_rate_limits_from_response
 from .http import build_cors_headers
 from .reasoning import (
@@ -57,18 +56,20 @@ def _wrap_stream_logging(label: str, iterator, enabled: bool):
     return _gen()
 
 
-def _instructions_for_model(model: str) -> str:
-    base = current_app.config.get("BASE_INSTRUCTIONS", BASE_INSTRUCTIONS)
+def _instructions_for_model(model: str) -> str | None:
+    base = current_app.config.get("BASE_INSTRUCTIONS")
     if (
         model.startswith("gpt-5-codex")
         or model.startswith("gpt-5.1-codex")
         or model.startswith("gpt-5.2-codex")
         or model.startswith("gpt-5.3-codex")
     ):
-        codex = current_app.config.get("GPT5_CODEX_INSTRUCTIONS") or GPT5_CODEX_INSTRUCTIONS
+        codex = current_app.config.get("GPT5_CODEX_INSTRUCTIONS")
         if isinstance(codex, str) and codex.strip():
             return codex
-    return base
+    if isinstance(base, str) and base.strip():
+        return base
+    return None
 
 
 @openai_bp.route("/v1/chat/completions", methods=["POST"])
@@ -223,7 +224,7 @@ def chat_completions() -> Response:
             upstream2, err2 = start_upstream_request(
                 model,
                 input_items,
-                instructions=BASE_INSTRUCTIONS,
+                instructions=_instructions_for_model(model),
                 tools=base_tools_only,
                 tool_choice=safe_choice,
                 parallel_tool_calls=parallel_tool_calls,

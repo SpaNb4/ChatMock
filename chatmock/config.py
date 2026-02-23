@@ -12,6 +12,13 @@ OAUTH_TOKEN_URL = f"{OAUTH_ISSUER_DEFAULT}/oauth/token"
 CHATGPT_RESPONSES_URL = "https://chatgpt.com/backend-api/codex/responses"
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return str(raw).strip().lower() in ("1", "true", "yes", "on")
+
+
 def _read_prompt_text(filename: str) -> str | None:
     candidates = [
         Path(__file__).parent.parent / filename,
@@ -44,5 +51,16 @@ def read_gpt5_codex_instructions(fallback: str) -> str:
     return content if isinstance(content, str) and content.strip() else fallback
 
 
-BASE_INSTRUCTIONS = read_base_instructions()
-GPT5_CODEX_INSTRUCTIONS = read_gpt5_codex_instructions(BASE_INSTRUCTIONS)
+def resolve_instruction_set(disable_repo_prompts: bool | None = None) -> tuple[str | None, str | None]:
+    disabled = _env_bool("CHATGPT_LOCAL_DISABLE_REPO_PROMPTS", default=False)
+    if disable_repo_prompts is not None:
+        disabled = bool(disable_repo_prompts)
+    if disabled:
+        return None, None
+
+    base = read_base_instructions()
+    codex = read_gpt5_codex_instructions(base)
+    return base, codex
+
+
+BASE_INSTRUCTIONS, GPT5_CODEX_INSTRUCTIONS = resolve_instruction_set()
